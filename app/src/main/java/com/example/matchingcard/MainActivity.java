@@ -13,11 +13,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import org.w3c.dom.Text;
-
-import java.util.Timer;
-import java.util.TimerTask;
-
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private int clickCount = 0;
@@ -76,10 +71,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 				})
 				.setIcon(android.R.drawable.ic_dialog_alert);
 		dlg.show();
-		if (mediaPlayer != null) {
-			mediaPlayer.release();
-			mediaPlayer = null;
-		}
 	}
 
 	protected int[] setupBtns() {
@@ -150,26 +141,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	private void secondFlip(ImageButton btn, TextView matches) {
 		Handler handler = new Handler(Looper.getMainLooper());
 		firstFlip(btn);
-		handler.postDelayed(() -> {
-			if (getBtnDrawableId(btn) != getBtnDrawableId(firstClickedBtn)) {
+		if (getBtnDrawableId(btn) == getBtnDrawableId(firstClickedBtn)) {
+			matchCount++;
+			matches.setText(matchCount + " of 6 matches");
+			playSound(R.raw.right);
+			if (matchCount == 6) {
+				if (mediaPlayer != null && mediaPlayer.isPlaying()) {
+					mediaPlayer.pause();
+				}
+				playSound(R.raw.win);
+				onDestroy();
+			} else {
+				clickCount = 0;
+				firstClickedBtn = null;
+				setButtonStatus(ids, true);
+			}
+		} else {
+			playSound(R.raw.wrong);
+			handler.postDelayed(() -> {
 				flipBack(btn);
 				flipBack(firstClickedBtn);
-			} else {
-				matchCount++;
-				matches.setText(matchCount + " of 6 matches");
-				mediaPlayer = MediaPlayer.create(this, R.raw.right);
-				mediaPlayer.start();
-				if (matchCount == 6){
-					onDestroy();
-				}
-			}
-			clickCount = 0;
-			firstClickedBtn = null;
-			mediaPlayer = MediaPlayer.create(this, R.raw.wrong);
-			mediaPlayer.start();
-			setButtonStatus(ids, true);
+				clickCount = 0;
+				firstClickedBtn = null;
+				setButtonStatus(ids, true);
 			}, 1000);
 		}
+	}
+	private void playSound(int soundResId){
+		if (mediaPlayer != null){
+			mediaPlayer.release();
+		}
+		mediaPlayer = MediaPlayer.create(this, soundResId);
+		mediaPlayer.start();
+	}
 
 	private void flipBack(ImageButton btn){
 		if (btn != null){
