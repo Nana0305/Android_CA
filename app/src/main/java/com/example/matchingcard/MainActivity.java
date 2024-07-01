@@ -1,12 +1,22 @@
 package com.example.matchingcard;
 
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import org.w3c.dom.Text;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -14,12 +24,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageButton firstClickedBtn = null;
 	private int matchCount = 0;
 	int [] ids = new int[12];
+	private Handler handler = new Handler();
+	private long startTime = 0;
+	private TextView timerTextView;
+	private MediaPlayer mediaPlayer;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		ids = setupBtns();
+		timerTextView = findViewById(R.id.timer);
+		startTime = System.currentTimeMillis();
+		handler.postDelayed(runnable, 0);
+	}
+	private Runnable runnable = new Runnable() {
+		@Override
+		public void run() {
+			long millis = System.currentTimeMillis() - startTime;
+			int seconds = (int) (millis/1000);
+			int minutes = seconds /60;
+			int hours = minutes/60;
+			seconds = seconds%60;
+			minutes = minutes%60;
+			timerTextView.setText(String.format("%02d:%02d:%02d", hours, minutes, seconds));
+			handler.postDelayed(this, 1000);
+		}
+	};
+	@Override
+	protected void onDestroy(){
+		super.onDestroy();
+		handler.removeCallbacks(runnable);
+		String title = getString(R.string.success);
+		String msg = getString(R.string.play_again);
+		AlertDialog.Builder dlg = new AlertDialog.Builder(this)
+				.setTitle(title)
+				.setMessage(msg)
+				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Intent intent = getIntent();
+						finish();
+						startActivity(intent);
+					}
+				})
+				.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					finish();
+					}
+				})
+				.setIcon(android.R.drawable.ic_dialog_alert);
+		dlg.show();
+		if (mediaPlayer != null) {
+			mediaPlayer.release();
+			mediaPlayer = null;
+		}
 	}
 
 	protected int[] setupBtns() {
@@ -97,9 +157,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 			} else {
 				matchCount++;
 				matches.setText(matchCount + " of 6 matches");
+				mediaPlayer = MediaPlayer.create(this, R.raw.right);
+				mediaPlayer.start();
+				if (matchCount == 6){
+					onDestroy();
+				}
 			}
 			clickCount = 0;
 			firstClickedBtn = null;
+			mediaPlayer = MediaPlayer.create(this, R.raw.wrong);
+			mediaPlayer.start();
 			setButtonStatus(ids, true);
 			}, 1000);
 		}
