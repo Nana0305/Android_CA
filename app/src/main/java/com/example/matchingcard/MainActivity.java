@@ -13,27 +13,47 @@ import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private int clickCount = 0;
     private ImageButton firstClickedBtn = null;
 	private int matchCount = 0;
 	int [] ids = new int[12];
-	private Handler handler = new Handler();
+	private final Handler handler = new Handler();
 	private long startTime = 0;
 	private TextView timerTextView;
 	private MediaPlayer mediaPlayer;
+	private final Integer[] drawableIds = {
+			R.drawable.floral_0,
+			R.drawable.floral_1,
+			R.drawable.floral_2,
+			R.drawable.floral_3,
+			R.drawable.floral_4,
+			R.drawable.floral_5,
+			R.drawable.floral_0,
+			R.drawable.floral_1,
+			R.drawable.floral_2,
+			R.drawable.floral_3,
+			R.drawable.floral_4,
+			R.drawable.floral_5
+	};
+	private final ArrayList<Integer> drawableList = new ArrayList<>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		ids = setupBtns();
+		Collections.addAll(drawableList, drawableIds);
+		Collections.shuffle(drawableList);
 		timerTextView = findViewById(R.id.timer);
 		startTime = System.currentTimeMillis();
 		handler.postDelayed(runnable, 0);
 	}
-	private Runnable runnable = new Runnable() {
+	private final Runnable runnable = new Runnable() {
 		@Override
 		public void run() {
 			long millis = System.currentTimeMillis() - startTime;
@@ -116,20 +136,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 	}
 
 	private void firstFlip(ImageButton btn) {
-		int id = btn.getId();
+		int btnId = btn.getId();
 		int resId = -1;
-		if (id == R.id.btn0 || id == R.id.btn6) {
-			resId = R.drawable.floral_1;
-		} else if (id == R.id.btn1 || id == R.id.btn7) {
-			resId = R.drawable.floral_2;
-		} else if (id == R.id.btn2 || id == R.id.btn8) {
-			resId = R.drawable.floral_3;
-		} else if (id == R.id.btn3 || id == R.id.btn9) {
-			resId = R.drawable.floral_4;
-		} else if (id == R.id.btn4 || id == R.id.btn10) {
-			resId = R.drawable.floral_5;
-		} else if (id == R.id.btn5 || id == R.id.btn11) {
-			resId = R.drawable.floral_6;
+		if (btnId == R.id.btn0) {
+			resId = drawableList.get(0);
+		} else if (btnId == R.id.btn1) {
+			resId = drawableList.get(1);
+		} else if (btnId == R.id.btn2){
+			resId = drawableList.get(2);
+		} else if (btnId == R.id.btn3) {
+			resId = drawableList.get(3);
+		} else if (btnId == R.id.btn4) {
+			resId = drawableList.get(4);
+		} else if (btnId == R.id.btn5) {
+			resId = drawableList.get(5);
+		} else if (btnId == R.id.btn6) {
+			resId = drawableList.get(6);
+		}else if (btnId == R.id.btn7){
+			resId = drawableList.get(7);
+		}else if (btnId == R.id.btn8){
+			resId = drawableList.get(8);
+		}else if (btnId == R.id.btn9){
+			resId = drawableList.get(9);
+		}else if (btnId == R.id.btn10){
+			resId = drawableList.get(10);
+		}else if (btnId == R.id.btn11){
+			resId = drawableList.get(11);
 		}
 		if (resId != -1){
 			btn.setImageResource(resId);
