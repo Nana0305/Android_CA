@@ -19,5 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Matching Card"
+rootProject.name = "Flip card"
 include(":app")
+ 
