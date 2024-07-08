@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
 	private EditText urlInput;
 	private GridView imageGrid;
 	private Button fetchButton;
-	private Button downloadButton;
 	private ProgressBar progressBar;
 	private TextView progressText;
 	private ImageAdapter imageAdapter;
@@ -51,22 +50,17 @@ public class MainActivity extends AppCompatActivity {
 		urlInput = findViewById(R.id.url_input);
 		imageGrid = findViewById(R.id.image_grid);
 		fetchButton = findViewById(R.id.fetch_button);
-		downloadButton = findViewById(R.id.download_button);
 		progressBar = findViewById(R.id.progressBar);
 		progressText = findViewById(R.id.progress_text);
 
 		imageAdapter = new ImageAdapter(this);
 		imageGrid.setAdapter(imageAdapter);
+		imageGrid.setEnabled(false); // Disable GridView initially
 
 		fetchButton.setOnClickListener(v -> fetchImageLinks());
-		downloadButton.setOnClickListener(v -> {
-			List<String> selectedImages = imageAdapter.getSelectedImages();
-			if (selectedImages.isEmpty()) {
-				Toast.makeText(MainActivity.this, "No images selected for download.", Toast.LENGTH_SHORT).show();
-			} else {
-				downloadImages(selectedImages);
-			}
-		});
+
+		// Listener for image selection changes
+		imageAdapter.setOnSelectionChangedListener(this::onImageSelectionChanged);
 	}
 
 	private void fetchImageLinks() {
@@ -80,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		fetching = true;
+		imageGrid.setEnabled(false); // Disable GridView during fetching
 		fetchThread = new Thread(() -> {
 			try {
 				String url = urlInput.getText().toString();
@@ -144,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
 				handler.post(() -> {
 					progressBar.setVisibility(ProgressBar.GONE);
 					progressText.setVisibility(TextView.GONE);
+					imageGrid.setEnabled(true); // Enable GridView after fetching is complete
 					fetching = false;
 				});
 			} catch (Exception e) {
@@ -158,6 +154,13 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 		fetchThread.start();
+	}
+
+	private void onImageSelectionChanged(List<String> selectedImages) {
+		if (selectedImages.size() == 6) {
+			// Start storing images immediately after selecting 6 images
+			downloadImages(selectedImages);
+		}
 	}
 
 	private void downloadImages(List<String> imageUrls) {
@@ -179,7 +182,6 @@ public class MainActivity extends AppCompatActivity {
 					public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
 						try (FileOutputStream fos = new FileOutputStream(file)) {
 							bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
-							Toast.makeText(MainActivity.this, "Images saved to " + directory.getAbsolutePath(), Toast.LENGTH_LONG).show();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

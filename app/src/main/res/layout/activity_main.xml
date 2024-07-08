@@ -47,11 +47,4 @@
         android:text="Downloading 0 out of 20 images..."
         android:visibility="gone"/>
 
-    <Button
-        android:id="@+id/download_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Download Images"
-        android:layout_marginBottom="10dp"/>
-
 </LinearLayout>
