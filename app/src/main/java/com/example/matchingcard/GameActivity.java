@@ -1,5 +1,6 @@
 package com.example.matchingcard;
 
+import android.animation.ValueAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -7,8 +8,11 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import androidx.constraintlayout.helper.widget.Flow;
 import android.os.Handler;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -93,28 +97,56 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 		super.onDestroy();
 		handler.removeCallbacks(runnable);
 		clearDownloadedImages();
-		String title = getString(R.string.success);
-		String msg = getString(R.string.play_again);
-		AlertDialog.Builder dlg = new AlertDialog.Builder(this)
-				.setTitle(title)
-				.setMessage(msg)
-				.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						Intent intent = new Intent(GameActivity.this, MainActivity.class);
-						finish();
-						startActivity(intent);
-					}
-				})
-				.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						finish();
-					}
-				})
-				.setIcon(android.R.drawable.ic_dialog_alert);
-		dlg.show();
+		if (mediaPlayer != null) {
+			mediaPlayer.release();
+			mediaPlayer = null;
+		}
 	}
+	private void showBlinkingTrophyDialog() {
+		// Inflate the custom layout for the dialog
+		LayoutInflater inflater = getLayoutInflater();
+		View dialogView = inflater.inflate(R.layout.dialog_layout, null);
+
+		// Find the ImageView in the custom layout
+		ImageView trophyImageView = dialogView.findViewById(R.id.trophy_image_view);
+
+		// Create a ValueAnimator that blinks the image
+		ValueAnimator blinkAnimator = ValueAnimator.ofFloat(0f, 1f);
+		blinkAnimator.setDuration(500); // 500ms for one blink cycle
+		blinkAnimator.setRepeatMode(ValueAnimator.REVERSE);
+		blinkAnimator.setRepeatCount(ValueAnimator.INFINITE);
+		blinkAnimator.setInterpolator(new LinearInterpolator());
+		blinkAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				float alpha = (float) animation.getAnimatedValue();
+				trophyImageView.setAlpha(alpha);
+			}
+		});
+
+		// Start the animation
+		blinkAnimator.start();
+
+		// Create and show the AlertDialog
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setView(dialogView);
+		builder.setCancelable(true);
+		builder.setPositiveButton("Close", (dialog, which) -> {
+			blinkAnimator.cancel();
+			dialog.dismiss();
+		});
+		AlertDialog alertDialog = builder.create();
+		alertDialog.show();
+
+		handler.postDelayed(() -> {
+			blinkAnimator.cancel();
+			alertDialog.dismiss();
+			finish();
+			Intent intent = new Intent(GameActivity.this, MainActivity.class);
+			startActivity(intent);
+		}, 5000);
+	}
+
 	private void clearDownloadedImages(){
 		File directory = new File(imageDirectory);
 		if (directory.exists() && directory.isDirectory()) {
@@ -198,7 +230,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 					mediaPlayer.pause();
 				}
 				playSound(R.raw.win);
-				onDestroy();
+				handler.postDelayed(this::showBlinkingTrophyDialog, 1000);
 			} else {
 				clickCount = 0;
 				firstClickedBtn = null;
