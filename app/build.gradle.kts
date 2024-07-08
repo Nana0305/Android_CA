@@ -37,6 +37,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
+    implementation("org.jsoup:jsoup:1.17.2")
+    implementation("com.squareup.picasso:picasso:2.71828")
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
