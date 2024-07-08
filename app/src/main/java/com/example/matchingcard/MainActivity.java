@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
 	private ImageAdapter imageAdapter;
 	private Thread fetchThread;
 	private boolean fetching;
+	private boolean fetch_completed;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
 		imageAdapter = new ImageAdapter(this);
 		imageGrid.setAdapter(imageAdapter);
-		imageGrid.setEnabled(false); // Disable GridView initially
+		imageGrid.setEnabled(false);
 
 		fetchButton.setOnClickListener(v -> fetchImageLinks());
 
@@ -65,19 +66,21 @@ public class MainActivity extends AppCompatActivity {
 
 	private void fetchImageLinks() {
 		if (fetching && fetchThread != null) {
+			fetch_completed = false;
 			fetchThread.interrupt(); // Interrupt the ongoing fetch
 		}
 
 		// Clear GridView when a new fetch starts
 		if (fetching) {
 			imageAdapter.setImageUrls(new ArrayList<>());
+			fetch_completed = false;
 		}
 
 		fetching = true;
-		imageGrid.setEnabled(false); // Disable GridView during fetching
 		fetchThread = new Thread(() -> {
 			try {
 				String url = urlInput.getText().toString();
+				fetch_completed = false;
 
 				Document doc = Jsoup.connect(url)
 						.userAgent("Mozilla")
@@ -106,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
 							imageAdapter.setImageUrls(new ArrayList<>()); // Clear GridView
 						});
 						fetching = false;
+						fetch_completed = true;
 						return;
 					}
 
@@ -139,8 +143,9 @@ public class MainActivity extends AppCompatActivity {
 				handler.post(() -> {
 					progressBar.setVisibility(ProgressBar.GONE);
 					progressText.setVisibility(TextView.GONE);
-					imageGrid.setEnabled(true); // Enable GridView after fetching is complete
 					fetching = false;
+					fetch_completed= true;
+					imageAdapter.setFetchCompleted(true);
 				});
 			} catch (Exception e) {
 				Handler handler = new Handler(Looper.getMainLooper());

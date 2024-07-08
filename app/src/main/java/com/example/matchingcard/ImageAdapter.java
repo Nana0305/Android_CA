@@ -18,7 +18,7 @@ public class ImageAdapter extends BaseAdapter {
 	private Set<Integer> selectedPositions = new HashSet<>();
 	private final int MAX_SELECTION = 6;
 	private OnSelectionChangedListener onSelectionChangedListener;
-	private boolean isGridEnabled = true;
+	private boolean fetch_completed = false;
 
 	public ImageAdapter(Context context) {
 		this.context = context;
@@ -76,7 +76,7 @@ public class ImageAdapter extends BaseAdapter {
 		}
 
 		imageView.setOnClickListener(v -> {
-			if (isGridEnabled) {
+			if (fetch_completed) {
 				if (selectedPositions.contains(position)) {
 					selectedPositions.remove(position); // Deselect if already selected
 					imageView.setAlpha(1.0f); // Reset alpha
@@ -106,8 +106,8 @@ public class ImageAdapter extends BaseAdapter {
 		void onSelectionChanged(List<String> selectedImages);
 	}
 
-	// Method to enable or disable GridView interactions
-	public void setGridEnabled(boolean enabled) {
-		this.isGridEnabled = enabled;
+	public void setFetchCompleted(boolean bool) {
+		this.fetch_completed = bool;
 	}
+
 }
