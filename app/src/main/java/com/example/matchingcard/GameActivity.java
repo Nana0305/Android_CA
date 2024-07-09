@@ -10,6 +10,7 @@ import androidx.constraintlayout.helper.widget.Flow;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -103,14 +104,12 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 		}
 	}
 	private void showBlinkingTrophyDialog() {
-		// Inflate the custom layout for the dialog
+
 		LayoutInflater inflater = getLayoutInflater();
 		View dialogView = inflater.inflate(R.layout.dialog_layout, null);
 
-		// Find the ImageView in the custom layout
 		ImageView trophyImageView = dialogView.findViewById(R.id.trophy_image_view);
 
-		// Create a ValueAnimator that blinks the image
 		ValueAnimator blinkAnimator = ValueAnimator.ofFloat(0f, 1f);
 		blinkAnimator.setDuration(500); // 500ms for one blink cycle
 		blinkAnimator.setRepeatMode(ValueAnimator.REVERSE);
@@ -124,19 +123,20 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 			}
 		});
 
-		// Start the animation
 		blinkAnimator.start();
 
-		// Create and show the AlertDialog
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setView(dialogView);
 		builder.setCancelable(true);
-		builder.setPositiveButton("Close", (dialog, which) -> {
-			blinkAnimator.cancel();
-			dialog.dismiss();
-		});
+
 		AlertDialog alertDialog = builder.create();
 		alertDialog.show();
+
+		WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+		layoutParams.copyFrom(alertDialog.getWindow().getAttributes());
+		layoutParams.width = 800; // Set the width in pixels
+		layoutParams.height = 800; // Adjust height as needed
+		alertDialog.getWindow().setAttributes(layoutParams);
 
 		handler.postDelayed(() -> {
 			blinkAnimator.cancel();
@@ -144,7 +144,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
 			finish();
 			Intent intent = new Intent(GameActivity.this, MainActivity.class);
 			startActivity(intent);
-		}, 5000);
+		}, 3000);
 	}
 
 	private void clearDownloadedImages(){
